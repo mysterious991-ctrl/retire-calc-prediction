@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- ⭐ RWD 關鍵：加入 viewport meta 標籤 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 財務資產終極導航 - 專業版 (重構版)</title>
     <style>
@@ -16,11 +15,9 @@
             background: var(--bg-light);
             margin: 0;
             color: #1e293b;
-            /* 【RWD 修改 1】: 預設改為區塊佈局，讓側邊欄和主內容垂直排列 */
             display: block;
         }
         .sidebar {
-            /* 【RWD 修改 2】: 手機上寬度為 100%，移除固定寬度 */
             width: 100%;
             background: var(--sidebar-bg);
             padding: 20px;
@@ -28,11 +25,10 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            /* 【RWD 修改 3】: 移除右邊框和陰影，box-sizing 確保 padding 不會讓寬度超過 100% */
             border-right: none;
             box-shadow: none;
             box-sizing: border-box;
-            padding-bottom: 20px; /* 調整手機版底部間距 */
+            padding-bottom: 20px;
         }
         h1 { font-size: 1.4rem; margin: 0 0 10px 0; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         .section-title {
@@ -62,7 +58,6 @@
         .draggable-item:active .drag-handle { cursor: grabbing; }
         .item-label { display: flex; align-items: center; }
         .main-content {
-            /* 【RWD 修改 4】: 手機上寬度也是 100%，移除 flex: 1 */
             width: 100%;
             padding: 20px;
             overflow: hidden;
@@ -72,11 +67,9 @@
         }
         .table-wrapper {
             background: white; border-radius: 12px; border: 1px solid var(--border-color);
-            /* 【RWD 修改 5】: 允許表格水平滾動，這是解決數字擠在一起的關鍵 */
             overflow-x: auto;
             flex: 1;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            /* 讓滾動在 iOS 上更滑順 */
             -webkit-overflow-scrolling: touch;
         }
         table {
@@ -84,7 +77,8 @@
             font-size: 0.75rem;
             width: 100%;
             white-space: nowrap;
-            /* table-layout: fixed;  <-- 暫時移除，讓欄位寬度能更彈性地適應內容 */
+            /* ⭐ 全域使用 auto 佈局，讓瀏覽器自動處理欄寬，解決桌面版擠壓問題 */
+            table-layout: auto;
         }
         thead th {
             background: #f8fafc; color: #475569; padding: 12px 8px; text-align: right;
@@ -105,10 +99,9 @@
         tbody td.year-col { background: #f8fafc; font-weight: bold; text-align: center; }
         .floating-btn {
             position: fixed;
-            /* 【RWD 修改 6】: 手機上按鈕位置改到右下角，更符合使用習慣 */
             bottom: 20px;
             right: 20px;
-            left: auto; /* 移除 left 定位 */
+            left: auto;
             z-index: 100;
             background: var(--accent); color: white; border: none; height: 52px;
             width: auto; padding: 0 24px; border-radius: 26px; cursor: pointer;
@@ -129,35 +122,28 @@
         .explanation-content ol, .explanation-content ul { padding-left: 20px; margin: 0; }
         .explanation-content li { margin-bottom: 5px; }
 
-        /* 【RWD 修改 7】: Media Query for Desktop */
-        /* 當螢幕寬度大於 1024px 時，套用以下樣式 */
         @media (min-width: 1024px) {
             body {
-                display: flex; /* 恢復 flex 佈局 */
+                display: flex;
                 height: 100vh;
                 overflow: hidden;
             }
             .sidebar {
-                width: var(--sidebar-width); /* 恢復固定寬度 */
+                width: var(--sidebar-width);
                 border-right: 1px solid var(--border-color);
                 box-shadow: 4px 0 15px rgba(0,0,0,0.05);
                 padding-bottom: 100px;
                 scroll-padding-bottom: 100px;
             }
             .main-content {
-                flex: 1; /* 恢復 flex 佔滿剩餘空間 */
+                flex: 1;
                 width: auto;
                 padding: 20px;
             }
             .table-wrapper {
-                /* 桌機版不需要水平滾動，因為空間足夠 */
                 overflow-x: hidden;
             }
-            table {
-                table-layout: fixed; /* 桌機版恢復 fixed layout 以對齊欄位 */
-            }
             .floating-btn {
-                /* 恢復按鈕在桌機版的位置 */
                 bottom: 30px;
                 left: calc(var(--sidebar-width) - 80px);
                 right: auto;
@@ -316,8 +302,9 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 40px;">年紀</th>
-                    <th style="width: 50px;">年度</th>
+                    <!-- ⭐ HTML 修改：將 width 改為 min-width，配合 table-layout: auto -->
+                    <th style="min-width: 40px;">年紀</th>
+                    <th style="min-width: 50px;">年度</th>
                     <th>總收入</th>
                     <th class="th-toggle" id="th-toggle-expense">總支出<span class="toggle-icon">▼</span></th>
                     <th class="col-hidden" data-group="expense">生活支出</th>
@@ -337,7 +324,7 @@
                     <th class="col-hidden" data-group="other-assets">信託</th>
                     <th class="col-hidden" data-group="other-assets">勞退</th>
                     <th class="col-hidden" data-group="other-assets">儲蓄險</th>
-                    <th class="th-toggle" id="th-toggle-networth" style="width: 120px;">總淨資產<span class="toggle-icon">▼</span></th>
+                    <th class="th-toggle" id="th-toggle-networth" style="min-width: 120px;">總淨資產<span class="toggle-icon">▼</span></th>
                     <th class="col-hidden" data-group="networth">總資產</th>
                     <th class="col-hidden" data-group="networth">總負債</th>
                 </tr>
