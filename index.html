@@ -2,6 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- ⭐ RWD 關鍵：加入 viewport meta 標籤 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 財務資產終極導航 - 專業版 (重構版)</title>
     <style>
         :root {
@@ -9,12 +11,28 @@
             --warning: #f39c12; --danger: #e74c3c; --bg-light: #f1f5f9;
             --sidebar-bg: #ffffff; --border-color: #e2e8f0; --sidebar-width: 480px;
         }
-        body { font-family: "PingFang TC", "Inter", sans-serif; background: var(--bg-light); margin: 0; display: flex; height: 100vh; overflow: hidden; color: #1e293b; }
+        body {
+            font-family: "PingFang TC", "Inter", sans-serif;
+            background: var(--bg-light);
+            margin: 0;
+            color: #1e293b;
+            /* 【RWD 修改 1】: 預設改為區塊佈局，讓側邊欄和主內容垂直排列 */
+            display: block;
+        }
         .sidebar {
-            width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
-            padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
-            padding-bottom: 100px; scroll-padding-bottom: 100px;
+            /* 【RWD 修改 2】: 手機上寬度為 100%，移除固定寬度 */
+            width: 100%;
+            background: var(--sidebar-bg);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            /* 【RWD 修改 3】: 移除右邊框和陰影，box-sizing 確保 padding 不會讓寬度超過 100% */
+            border-right: none;
+            box-shadow: none;
+            box-sizing: border-box;
+            padding-bottom: 20px; /* 調整手機版底部間距 */
         }
         h1 { font-size: 1.4rem; margin: 0 0 10px 0; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         .section-title {
@@ -43,12 +61,31 @@
         .drag-handle { cursor: grab; color: #94a3b8; margin-right: 10px; }
         .draggable-item:active .drag-handle { cursor: grabbing; }
         .item-label { display: flex; align-items: center; }
-        .main-content { flex: 1; padding: 20px; overflow: hidden; display: flex; flex-direction: column; }
+        .main-content {
+            /* 【RWD 修改 4】: 手機上寬度也是 100%，移除 flex: 1 */
+            width: 100%;
+            padding: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
         .table-wrapper {
             background: white; border-radius: 12px; border: 1px solid var(--border-color);
-            overflow: auto; flex: 1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            /* 【RWD 修改 5】: 允許表格水平滾動，這是解決數字擠在一起的關鍵 */
+            overflow-x: auto;
+            flex: 1;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            /* 讓滾動在 iOS 上更滑順 */
+            -webkit-overflow-scrolling: touch;
         }
-        table { border-collapse: collapse; font-size: 0.75rem; width: 100%; white-space: nowrap; table-layout: fixed; }
+        table {
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            width: 100%;
+            white-space: nowrap;
+            /* table-layout: fixed;  <-- 暫時移除，讓欄位寬度能更彈性地適應內容 */
+        }
         thead th {
             background: #f8fafc; color: #475569; padding: 12px 8px; text-align: right;
             border-bottom: 2px solid var(--border-color); position: sticky; top: 0; z-index: 10;
@@ -67,7 +104,12 @@
         .val-neg { color: var(--danger); font-weight: bold; }
         tbody td.year-col { background: #f8fafc; font-weight: bold; text-align: center; }
         .floating-btn {
-            position: fixed; bottom: 30px; left: calc(var(--sidebar-width) - 80px); z-index: 100;
+            position: fixed;
+            /* 【RWD 修改 6】: 手機上按鈕位置改到右下角，更符合使用習慣 */
+            bottom: 20px;
+            right: 20px;
+            left: auto; /* 移除 left 定位 */
+            z-index: 100;
             background: var(--accent); color: white; border: none; height: 52px;
             width: auto; padding: 0 24px; border-radius: 26px; cursor: pointer;
             box-shadow: 0 4px 14px rgba(52, 152, 219, 0.4); display: flex;
@@ -86,6 +128,41 @@
         .explanation-content h4 { font-size: 0.85rem; color: var(--primary); margin-top: 10px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
         .explanation-content ol, .explanation-content ul { padding-left: 20px; margin: 0; }
         .explanation-content li { margin-bottom: 5px; }
+
+        /* 【RWD 修改 7】: Media Query for Desktop */
+        /* 當螢幕寬度大於 1024px 時，套用以下樣式 */
+        @media (min-width: 1024px) {
+            body {
+                display: flex; /* 恢復 flex 佈局 */
+                height: 100vh;
+                overflow: hidden;
+            }
+            .sidebar {
+                width: var(--sidebar-width); /* 恢復固定寬度 */
+                border-right: 1px solid var(--border-color);
+                box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+                padding-bottom: 100px;
+                scroll-padding-bottom: 100px;
+            }
+            .main-content {
+                flex: 1; /* 恢復 flex 佔滿剩餘空間 */
+                width: auto;
+                padding: 20px;
+            }
+            .table-wrapper {
+                /* 桌機版不需要水平滾動，因為空間足夠 */
+                overflow-x: hidden;
+            }
+            table {
+                table-layout: fixed; /* 桌機版恢復 fixed layout 以對齊欄位 */
+            }
+            .floating-btn {
+                /* 恢復按鈕在桌機版的位置 */
+                bottom: 30px;
+                left: calc(var(--sidebar-width) - 80px);
+                right: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -109,7 +186,6 @@
     <div class="input-card">
         <div class="form-grid">
             <div class="form-group"><label for="retireAge">預計退休年齡</label><div class="input-wrapper"><input type="number" id="retireAge" value="65"><span class="unit">歲</span></div></div>
-            <!-- ⭐ HTML 修改點 -->
             <div class="form-group">
                 <label for="retireExpenseFactor">退休後生活費比例</label>
                 <div class="input-wrapper">
@@ -279,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
         SAFE_ASSET_RETURN_RATE: 1.04,
         PENSION_WITHDRAW_AGE: 60, SAVINGS_WITHDRAW_YEAR: 2036,
         LOCAL_STORAGE_KEY: 'financialNavigatorSettings', 
-        // ⭐ JS 修改點 1
         INPUT_IDS_TO_SAVE: [
             'mSal', 'aBon', 'sGr', 'retA', 'aRsuGrant', 'retIncFactor', 
             'retireAge', 'retireExpenseFactor', 'mLi', 'inf', 'aTax', 
@@ -311,7 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         getParams() {
-            // ⭐ JS 修改點 2
             return {
                 mSal: this._parseNum('mSal'), aBon: this._parseNum('aBon'), sGr: this._parseNum('sGr', true), retA: this._parseNum('retA'),
                 mLi: this._parseNum('mLi'), inf: this._parseNum('inf', true), aTax: this._parseNum('aTax'),
@@ -622,7 +696,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentLivingExpenses = 0;
             let currentPensionContribution = 0;
 
-            // ⭐ JS 修改點 3: 統一計算邏輯
             const preRetirementBaseExpenses = this.params.mLi * 12 + this.params.aIns + this.params.aTrv + this.params.aMisc;
 
             if (isFullyRetired) {
